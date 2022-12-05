@@ -3,10 +3,9 @@
  */
 
 #include "main.h"
-
 #if	(cmakeGUI == 3)
 #include "gui_lovyan.h"
-#include "lvgl_conf_wrover_dk41.h"
+#include "lgfx_conf_wrover_dk41.h"
 
 // IRMACOS specific
 #include "hal_variables.h"
@@ -50,12 +49,12 @@ void vGuiInit(void) { }
 
 void vGuiUpdate(void) {
 	int iRV = xRtosReportTasks(makeMASK09x23(0,0,1,1,1,1,1,0,1,0x000FFFCF), TxtBuf, sizeTEXTBUF);
-	iRV += snprintfx(TxtBuf+iRV, lvglSIZE_RTOSBUF - iRV, "%!R  %Z\r\n", RunTime, &sTSZ);
-//	iRV += snprintfx(TxtBuf+iRV, lvglSIZE_RTOSBUF - iRV, "Value=%u  ", Level);
-	iRV += snprintfx(TxtBuf+iRV, lvglSIZE_RTOSBUF - iRV, "Evt=0x%08X\r\n", xEventGroupGetBits(xEventStatus));
-	iRV += snprintfx(TxtBuf+iRV, lvglSIZE_RTOSBUF - iRV, "Run=0x%08X\r\n", xEventGroupGetBits(TaskRunState));
-	iRV += snprintfx(TxtBuf+iRV, lvglSIZE_RTOSBUF - iRV, "Del=0x%08X\r\n", xEventGroupGetBits(TaskDeleteState));
-	iRV += snprintfx(TxtBuf+iRV, lvglSIZE_RTOSBUF - iRV, "Sys=0x%08X\r\n", SFcur);
+	iRV += snprintfx(TxtBuf+iRV, sizeTEXTBUF - iRV, "%!R  %Z\r\n", RunTime, &sTSZ);
+//	iRV += snprintfx(TxtBuf+iRV, sizeTEXTBUF - iRV, "Value=%u  ", Level);
+	iRV += snprintfx(TxtBuf+iRV, sizeTEXTBUF - iRV, "Evt=0x%08X\r\n", xEventGroupGetBits(xEventStatus));
+	iRV += snprintfx(TxtBuf+iRV, sizeTEXTBUF - iRV, "Run=0x%08X\r\n", xEventGroupGetBits(TaskRunState));
+	iRV += snprintfx(TxtBuf+iRV, sizeTEXTBUF - iRV, "Del=0x%08X\r\n", xEventGroupGetBits(TaskDeleteState));
+	iRV += snprintfx(TxtBuf+iRV, sizeTEXTBUF - iRV, "Sys=0x%08X\r\n", SFcur);
 }
 
 void vGuiRefresh(void) { }

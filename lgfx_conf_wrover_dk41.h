@@ -1,5 +1,5 @@
 /*
- * lvgl_conf_mf_s3_p16.h
+ * lgfx_conf_mf_s3_p16.h
  * Copyright (c) 2022 Andre M. Maree / KSS Technologies (Pty) Ltd.
  */
 
