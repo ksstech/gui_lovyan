@@ -1,17 +1,25 @@
 /*
- * lgfx_conf_mf_s3_p16.h
+ * lgfx_conf_wrover_dk41.h
  * Copyright (c) 2022 Andre M. Maree / KSS Technologies (Pty) Ltd.
  */
 
 #pragma once
 
-#define ESPRESSIF_WROVER_DK41 LGFX_ESP_WROVER_KIT
+#define LGFX_ESP_WROVER_KIT
 
-#define LGFX_USE_V1
+#if !defined LGFX_USE_V1
+  #define LGFX_USE_V1
+#endif
+
+#if !defined LGFX_AUTODETECT
+  #define LGFX_AUTODETECT
+#endif
+
 #include <LovyanGFX.hpp>
-#include <driver/i2c.h>
 
-//#define SD_SUPPORTED				1				// SD CARD - SPI
+/*
+
+#define SD_SUPPORTED				0				// SD CARD - SPI
 #if (SD_SUPPORTED > 0)
 	#define SDSPI_HOST_ID			SPI3_HOST
 	#define SD_MISO					GPIO_NUM_41
@@ -33,22 +41,17 @@
 #define TFT_RST     				GPIO_NUM_18
 #define TFT_BL      				GPIO_NUM_5
 
-class LGFX : public lgfx::LGFX_Device {
-    static constexpr int I2C_PORT_NUM = -1;
-    static constexpr int I2C_PIN_SDA = -1;
-    static constexpr int I2C_PIN_SCL = -1;
-    static constexpr int I2C_PIN_INT = -1;
+class LGFX : public lgfx::LGFX_Device
+{
+  lgfx::Panel_ILI9341     _panel_instance;
+  lgfx::Bus_SPI			_bus_instance;
+  lgfx::Light_PWM         _light_instance;
 
-    lgfx::Panel_ILI9341     _panel_instance;
-    lgfx::Bus_SPI			_bus_instance;
-    lgfx::Light_PWM         _light_instance;
-//    lgfx::Touch_FT5x06      _touch_instance;
-
-public:
-    LGFX(void) {
+  public:
+    LGFX(void)
+    {
         {
             auto cfg = _bus_instance.config();
-
             cfg.port = 0;
             cfg.freq_write = 20000000;
             cfg.pin_wr = 35;
@@ -119,3 +122,4 @@ public:
         setPanel(&_panel_instance);
     }
 };
+*/

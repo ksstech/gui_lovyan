@@ -13,8 +13,9 @@ extern "C" {
 
 // ################################## global functions #############################################
 
-void vTaskGUI_Init(void *);
+void vTaskGUI_Start(void *);
 
 #ifdef __cplusplus
 }
 #endif
+

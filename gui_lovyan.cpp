@@ -2,23 +2,14 @@
  * gui_lovyan.cpp
  */
 
-#include "main.h"
-#if	(cmakeGUI == 3)
-#include "gui_lovyan.h"
-#include "lgfx_conf_wrover_dk41.h"
+#include "hal_config.h"
 
-// IRMACOS specific
-#include "hal_variables.h"
+#if	(cmakeGUI == 3)
+#include "lgfx_conf_wrover_dk41.hpp"
+#include "FreeRTOS_Support.h"
 #include "printfx.h"
 #include "syslog.h"
 #include "systiming.h"
-#include "hal_timer.h"
-
-// ESP32 specific
-#include "esp_freertos_hooks.h"
-#include "esp_system.h"
-#include "driver/gpio.h"
-#include "driver/ledc.h"
 
 // #################################### Build macros ###############################################
 
@@ -33,31 +24,48 @@
 
 #define	guiPRIORITY					2
 #define	guiSTACK_SIZE				(configMINIMAL_STACK_SIZE + 2048 + (flagSTACK * 512))
-#define guiINTERVAL_MS				100
+#define guiINTERVAL_MS				500
 
-#define	sizeTEXTBUF					3072
+#define	sizeTEXTBUF					2048
 
 // ####################################### Private variables #######################################
 
-u8_t TxtBuf[sizeTEXTBUF];
+static LGFX lcd;
+static char TxtBuf[sizeTEXTBUF];
 StaticTask_t ttsGUI;
 StackType_t tsbGUI[guiSTACK_SIZE] = { 0 };
 
 // ################################## Background/Backlight control #################################
 
-void vGuiInit(void) { }
+void vGuiInit(void) {
+	lcd.init();
+	lcd.clear();
+	lcd.setRotation(3);									// ensure landscape
+	lcd.cp437(true);
+//	lcd.setFont(&Font8x8C64);
 
-void vGuiUpdate(void) {
-	int iRV = xRtosReportTasks(makeMASK09x23(0,0,1,1,1,1,1,0,1,0x000FFFCF), TxtBuf, sizeTEXTBUF);
-	iRV += snprintfx(TxtBuf+iRV, sizeTEXTBUF - iRV, "%!R  %Z\r\n", RunTime, &sTSZ);
-//	iRV += snprintfx(TxtBuf+iRV, sizeTEXTBUF - iRV, "Value=%u  ", Level);
-	iRV += snprintfx(TxtBuf+iRV, sizeTEXTBUF - iRV, "Evt=0x%08X\r\n", xEventGroupGetBits(xEventStatus));
-	iRV += snprintfx(TxtBuf+iRV, sizeTEXTBUF - iRV, "Run=0x%08X\r\n", xEventGroupGetBits(TaskRunState));
-	iRV += snprintfx(TxtBuf+iRV, sizeTEXTBUF - iRV, "Del=0x%08X\r\n", xEventGroupGetBits(TaskDeleteState));
-	iRV += snprintfx(TxtBuf+iRV, sizeTEXTBUF - iRV, "Sys=0x%08X\r\n", SFcur);
+	lcd.setColorDepth(1);
 }
 
-void vGuiRefresh(void) { }
+void vGuiUpdate(void) {
+	int iRV = xRtosReportTasks(TxtBuf, sizeTEXTBUF, (fm_t)makeMASK09x23(0,0,1,1,1,1,1,0,1,0x000FFFFF));
+	char * pcBuf = TxtBuf + iRV;
+	size_t Size = sizeTEXTBUF - iRV;
+	wsnprintfx(&pcBuf, &Size, "Sys=0x%08X\r\n", SFcur);
+	wsnprintfx(&pcBuf, &Size, "%!R  %Z\r\n", RunTime, &sTSZ);
+}
+
+void vGuiRefresh(void) {
+//	lcd.clear();
+//	lcd.setTextColor(1);
+//	lcd.setBrightness(255);
+//	lcd.print(TxtBuf);
+//    lcd.printFixed(0, 0, (const char *) TxtBuf, STYLE_NORMAL);
+    lcd.clear(0x0000);
+	lcd.setColor(255,255,255);
+	lcd.setCursor(0,0);
+	lcd.print(TxtBuf);
+}
 
 void vTaskGUI(void * pVoid) {
 	IF_SYSTIMER_INIT(debugTIMING, stGUI0, stMILLIS, "GUI0", 3, 30);
@@ -82,7 +90,7 @@ void vTaskGUI(void * pVoid) {
 	vRtosTaskDelete(NULL);
 }
 
-void vTaskGUI_Init(void * pvPara) {
+extern "C" void vTaskGUI_Start(void * pvPara) {
 	xRtosTaskCreateStatic(vTaskGUI, "lovyan", guiSTACK_SIZE, pvPara, guiPRIORITY, tsbGUI, &ttsGUI, tskNO_AFFINITY);
 }
 #endif

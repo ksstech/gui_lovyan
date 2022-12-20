@@ -1,19 +1,12 @@
 /*
- * gui_lovyan_demo.cpp
- * Copyright (c) 2022 Andre M. Maree / KSS Technologies (Pty) Ltd.
+ * gui_lovyan.cpp
  */
 
 #if	(cmakeGUI == 3)
-#include "gui_lovyan.h"
 
-#define LGFX_ESP_WROVER_KIT
-//#define LGFX_AUTODETECT
-
-#define LGFX_USE_V1
-#include <LovyanGFX.hpp>
-
-#include "hal_variables.h"
+#include "lgfx_conf_wrover_dk41.hpp"
 #include "systiming.h"
+#include "FreeRTOS_Support.h"
 
 // #################################### Build macros ###############################################
 
@@ -32,43 +25,42 @@
 
 // ####################################### Private variables #######################################
 
+static LGFX lcd;
+static LGFX_Sprite canvas;
 StaticTask_t ttsGUI;
 StackType_t tsbGUI[guiSTACK_SIZE] = { 0 };
-
-LGFX lcd;
-LGFX_Sprite canvas;
-
 static constexpr char text[] = "Hello world ! こんにちは世界！ this is long long string sample. 寿限無、寿限無、五劫の擦り切れ、海砂利水魚の、水行末・雲来末・風来末、喰う寝る処に住む処、藪ら柑子の藪柑子、パイポ・パイポ・パイポのシューリンガン、シューリンガンのグーリンダイ、グーリンダイのポンポコピーのポンポコナの、長久命の長助";
 static constexpr size_t textlen = sizeof(text) / sizeof(text[0]);
 size_t textpos = 0;
 
+// ################################## Background/Backlight control #################################
+
 void vGuiInit(void) {
-  lcd.init();
-  if (lcd.width() < lcd.height())
-	  lcd.setRotation(lcd.getRotation() ^ 1);
-  canvas.setColorDepth(8);
-  canvas.setFont(&fonts::lgfxJapanMinchoP_32);
-  canvas.setTextWrap(false);
-  canvas.createSprite(lcd.width() + 36, 36);
+	  lcd.init();
+	  if (lcd.width() < lcd.height())			  // Setting display to landscape
+		  lcd.setRotation(lcd.getRotation() ^ 1);
+	  canvas.setColorDepth(8);
+	  canvas.setFont(&fonts::lgfxJapanMinchoP_32);
+	  canvas.setTextWrap(false);
+	  canvas.createSprite(lcd.width() + 36, 36);
 }
 
 void vGuiUpdate(void) {
-    int32_t cursor_x = canvas.getCursorX() - 1;
-    if (cursor_x <= 0) {
+	  int32_t cursor_x = canvas.getCursorX() - 1;
+	  if (cursor_x <= 0) {
 	    textpos = 0;
-    	cursor_x = lcd.width();
-    }
-    canvas.setCursor(cursor_x, 0);
-    canvas.scroll(-1, 0);
-    while (textpos < textlen && cursor_x <= lcd.width()) {
+	    cursor_x = lcd.width();
+	  }
+	  canvas.setCursor(cursor_x, 0); // カーソル位置を更新
+	  canvas.scroll(-1, 0);          // キャンバスの内容を1ドット左にスクロール
+	  while (textpos < textlen && cursor_x <= lcd.width()) {
 	    canvas.print(text[textpos++]);
-    	cursor_x = canvas.getCursorX();
-    }
+	    cursor_x = canvas.getCursorX();
+	  }
+	  canvas.pushSprite(&lcd, 0, 0);
 }
 
-void vGuiRefresh(void) {
-	canvas.pushSprite(&lcd, 0, 0);
-}
+void vGuiRefresh(void) { }
 
 void vTaskGUI(void * pVoid) {
 	IF_SYSTIMER_INIT(debugTIMING, stGUI0, stMILLIS, "GUI0", 3, 30);
